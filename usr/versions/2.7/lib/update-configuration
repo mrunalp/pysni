@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Utility function to update cartridge configuration
+
+function update-configuration {
+    # Native installations of python
+    echo "$OPENSHIFT_PYSNI_DIR/virtenv/bin:$OPENSHIFT_PYSNI_DIR/bin" > $OPENSHIFT_PYSNI_DIR/env/OPENSHIFT_PYSNI_PATH_ELEMENT
+    echo "$OPENSHIFT_PYSNI_DIR/virtenv" > $OPENSHIFT_PYSNI_DIR/env/VIRTUAL_ENV
+}

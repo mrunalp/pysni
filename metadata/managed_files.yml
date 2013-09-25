@@ -1,0 +1,18 @@
+---
+locked_files:
+- bin/
+- bin/*
+- etc/
+- etc/conf/
+- etc/conf/*
+- etc/conf.d/
+- etc/conf.d/openshift.conf
+- hooks/
+- hooks/*
+- metadata/
+- metadata/*
+- env/
+- env/OPENSHIFT_PYSNI_DIR
+- env/OPENSHIFT_PYSNI_LOG_DIR
+processed_templates:
+- '**/*.erb'

@@ -1,0 +1,15 @@
+#!/bin/bash -eu
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+case "$1" in
+    -v|--version)
+      version="$2"
+esac
+
+echo "$version" > "$OPENSHIFT_PYSNI_DIR/env/OPENSHIFT_PYSNI_VERSION"
+
+mkdir -p $OPENSHIFT_PYSNI_DIR/template
+
+# Call the version specific install script
+exec $OPENSHIFT_PYSNI_DIR/usr/versions/$version/bin/install $version

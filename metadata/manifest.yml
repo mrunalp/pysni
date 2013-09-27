@@ -2,6 +2,7 @@
 Name: pysni
 Cartridge-Short-Name: PYSNI
 Display-Name: PySNI 2.7
+Source-Url: https://github.com/rmillner/pysni.git
 Description: ! 'Python is a general-purpose, high-level programming language whose
   design philosophy emphasizes code readability. Popular development frameworks include:
   Django, Bottle, Pylons, Zope and TurboGears.'

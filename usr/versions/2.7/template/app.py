@@ -20,6 +20,7 @@ except IOError:
 # IMPORTANT: Put any additional includes below this line.  If placed above this
 # line, it's possible required libraries won't be in your searchable path
 #
+from gevent.pywsgi import WSGIServer
 
 
 #
@@ -36,33 +37,23 @@ if __name__ == '__main__':
    sni_cert = os.environ['OPENSHIFT_PYSNI_SNI_CERT']
    sni_key = os.environ['OPENSHIFT_PYSNI_SNI_KEY']
 
-   fwtype="wsgiref"
-   for fw in ("cherrypy"):
-      try:
-         imp.find_module(fw)
-         fwtype = fw
-      except ImportError:
-         pass
+   servers = []
 
-   print('Starting WSGIServer type %s on %s:%d ... ' % (fwtype, ip, port))
-   if fwtype == "cherrypy":
-      import cherrypy
-      from cherrypy.wsgiserver import CherryPyWSGIServer
-      from cherrypy.wsgiserver.ssl_builtin import BuiltinSSLAdapter
-      from cherrypy.process.servers import ServerAdapter
+   print('Preparing WSGIServer on %s:%d' % (ip, port))
+   servers.append(WSGIServer((ip, port), app.application))
 
-      a1 = CherryPyWSGIServer((ip, port), app.application, server_name=os.environ['OPENSHIFT_APP_DNS'])
-      s1 = ServerAdapter(cherrypy.engine, a1)
+   print('Preparing SSL WSGIServer on %s:%d with %s %s' % (sni_ip, sni_port, sni_cert, sni_key))
+   servers.append(WSGIServer((sni_ip, sni_port), app.application, keyfile=sni_key, certfile=sni_cert))
 
-      a2 = CherryPyWSGIServer((sni_ip, sni_port), app.application, server_name=os.environ['OPENSHIFT_APP_DNS'])
-      a2.ssl_adapter = BuiltinSSLAdapter(sni_cert, sni_key, None)
-      s2 = ServerAdapter(cherrypy.engine, a2 )
+   print('Starting WSGIServers')
+   for server in servers:
+      server.start()
 
-      s1.subscribe
-      s2.subscribe
+   print('Waiting for WSGIServers')
+   try:
+      servers[0]._stopped_event.wait()
+   except:
+      for server in servers:
+         server.stop()
+      raise
 
-      cherrypy.engine.start()
-
-   else:
-      from wsgiref.simple_server import make_server
-      make_server(ip, port, app.application).serve_forever()

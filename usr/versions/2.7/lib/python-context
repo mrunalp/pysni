@@ -4,9 +4,9 @@
 # of any updates to PATH and LD_LIBRARY_PATH.
 
 function python-context {
-    bash -c "$@"
+    scl enable python27 "$@"
 }
 
 function python-context-stdin {
-    bash -
+    scl enable python27 -
 }

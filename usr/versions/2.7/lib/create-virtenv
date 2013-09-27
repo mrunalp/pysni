@@ -21,4 +21,6 @@ function create-virtenv {
     done
 
     relative-virtenv
+
+    touch $OPENSHIFT_PYSNI_DIR/virtenv/.needs_build
 }

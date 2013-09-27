@@ -10,27 +10,18 @@ HTTPD_PID_FILE=$OPENSHIFT_PYSNI_DIR/run/httpd.pid
 # For backwards compatibility
 export APPDIR=$OPENSHIFT_PYSNI_DIR
 
-
 function start_app() {
     cd "$OPENSHIFT_REPO_DIR"
     nohup python -u app.py > "$OPENSHIFT_PYSNI_DIR/logs/appserver.log" 2>&1 &
     echo $! > $OPENSHIFT_PYSNI_DIR/run/appserver.pid
 }
 
-function start_apache() {
-    write_httpd_passenv $HTTPD_PASSENV_FILE
-    ensure_valid_httpd_process "$HTTPD_PID_FILE" "$HTTPD_CFG_FILE"
-    /usr/sbin/httpd -C "Include $OPENSHIFT_PYSNI_DIR/etc/conf.d/*.conf" -f $HTTPD_CFG_FILE -k start
-}
-
 function start() {
-    echo "Starting PYSNI cart"
-    if [ -f "$OPENSHIFT_REPO_DIR/app.py" ]
-    then
-        start_app
-    else
-        start_apache
+    if [ -f $VIRTUAL_ENV/.needs_build ]
+        build
     fi
+    echo "Starting PYSNI cart"
+    start_app
 }
 
 function stop_app() {
@@ -49,47 +40,20 @@ function stop_app() {
     fi
 }
 
-function stop_apache() {
-    ensure_valid_httpd_process "$HTTPD_PID_FILE" "$HTTPD_CFG_FILE"
-    if [ -f "$HTTPD_PID_FILE" ]; then
-        httpd_pid=`cat "$HTTPD_PID_FILE" 2> /dev/null`
-        /usr/sbin/httpd -C "Include $OPENSHIFT_PYSNI_DIR/etc/conf.d/*.conf" -f $HTTPD_CFG_FILE -k stop
-        wait_for_stop $httpd_pid
-    fi
-}
-
 function stop() {
     echo "Stopping PYSNI cart"
-
-    # Do both in case the last commit transitioned from one to the
-    # other or there was a problem.
-    stop_apache
     stop_app
 }
 
-
 function restart() {
    echo "Restarting PYSNI cart"
-    if [ -f "$OPENSHIFT_REPO_DIR/app.py" ]
-    then
-        stop
-        start
-    else
-        stop_app
-        write_httpd_passenv $HTTPD_PASSENV_FILE
-        ensure_httpd_restart_succeed "$HTTPD_PID_FILE" "$HTTPD_CFG_FILE"
-        /usr/sbin/httpd -C "Include $OPENSHIFT_PYSNI_DIR/etc/conf.d/*.conf" -f $HTTPD_CFG_FILE -k restart
-    fi
+   stop
+   start
 }
 
 function status() {
     res=0
-    if [ -f "$OPENSHIFT_REPO_DIR/app.py" ]
-    then
-        output=$(curl -s -m 30 http://$OPENSHIFT_PYSNI_IP:$OPENSHIFT_PYSNI_PORT/ &> /dev/null) || res=1
-    else
-        output=$(curl -s -m 30 http://$OPENSHIFT_PYSNI_IP:$OPENSHIFT_PYSNI_PORT/server-status?auto 2>&1 ) || res=1
-    fi
+    output=$(curl -s -m 30 http://$OPENSHIFT_PYSNI_IP:$OPENSHIFT_PYSNI_PORT/ &> /dev/null) || res=1
     if [ $res -eq 0 ]
     then
         client_result "Application is running"
@@ -142,6 +106,8 @@ function build() {
     fi
 
     relative-virtenv
+
+    rm -f $VIRTUAL_ENV/.needs_build
 }
 
 function deploy() {

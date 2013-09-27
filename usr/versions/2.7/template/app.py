@@ -33,6 +33,9 @@ if __name__ == '__main__':
    sni_ip = os.environ['OPENSHIFT_PYSNI_SNI_IP']
    sni_port = int(os.environ['OPENSHIFT_PYSNI_SNI_PORT'])
 
+   sni_cert = os.environ['OPENSHIFT_PYSNI_SNI_CERT']
+   sni_key = os.environ['OPENSHIFT_PYSNI_SNI_KEY']
+
    fwtype="wsgiref"
    for fw in ("cherrypy"):
       try:
@@ -44,13 +47,16 @@ if __name__ == '__main__':
    print('Starting WSGIServer type %s on %s:%d ... ' % (fwtype, ip, port))
    if fwtype == "cherrypy":
       import cherrypy
-      s1 = cherrypy.process.servers.ServerAdapter(cherrypy.engine,
-                                                  cherrypy.wsgiserver.CherryPyWSGIServer(
-            (ip, port), app.application, server_name=os.environ['OPENSHIFT_APP_DNS']) )
+      from cherrypy.wsgiserver import CherryPyWSGIServer
+      from cherrypy.wsgiserver.ssl_builtin import BuiltinSSLAdapter
+      from cherrypy.process.servers import ServerAdapter
 
-      s2 = cherrypy.process.servers.ServerAdapter(cherrypy.engine,
-                                                  cherrypy.wsgiserver.CherryPyWSGIServer(
-            (sni_ip, sni_port), app.application, server_name=os.environ['OPENSHIFT_APP_DNS']) )
+      a1 = CherryPyWSGIServer((ip, port), app.application, server_name=os.environ['OPENSHIFT_APP_DNS'])
+      s1 = ServerAdapter(cherrypy.engine, a1)
+
+      a2 = CherryPyWSGIServer((sni_ip, sni_port), app.application, server_name=os.environ['OPENSHIFT_APP_DNS'])
+      a2.ssl_adapter = BuiltinSSLAdapter(sni_cert, sni_key, None)
+      s2 = ServerAdapter(cherrypy.engine, a2 )
 
       s1.subscribe
       s2.subscribe

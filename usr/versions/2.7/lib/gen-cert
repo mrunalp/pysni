@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Utility function to generate a self-signed cert
+
+function gen-cert {
+    [ -e $OPENSHIFT_PYSNI_DIR/etc/server.crt ] && return
+    (
+        cd $OPENSHIFT_PYSNI_DIR/etc
+        hostname=$(hostname)
+        openssl genrsa -out server.key 2048
+        openssl req -new -key server.key -out server.csr \
+            -subj "/C=--/ST=SomeState/L=SomeCity/O=SomeOrganization/OU=SomeOrganizationalUnit/CN=${hostname}/emailAddress=root@${hostname}"
+        openssl x509 -req -days 360 -in server.csr -signkey server.key -out server.crt
+    )
+    echo "$OPENSHIFT_PYSNI_DIR/etc/server.crt" > $OPENSHIFT_PYSNI_DIR/env/OPENSHIFT_PYSNI_SNI_CERT
+    echo "$OPENSHIFT_PYSNI_DIR/etc/server.key" > $OPENSHIFT_PYSNI_DIR/env/OPENSHIFT_PYSNI_SNI_KEY
+}

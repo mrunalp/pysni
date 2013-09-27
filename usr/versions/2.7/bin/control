@@ -18,6 +18,7 @@ function start_app() {
 
 function start() {
     if [ -f $VIRTUAL_ENV/.needs_build ]
+    then
         build
     fi
     echo "Starting PYSNI cart"

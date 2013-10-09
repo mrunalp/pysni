@@ -83,7 +83,7 @@ Endpoints:
   Private-Port-Name: PORT
   Private-Port: 8080
   Public-Port-Name: PROXY_PORT
-  Protocols: http
+  Protocols: [http, ws]
   Mappings:
   - Frontend: ''
     Backend: ''
@@ -97,7 +97,7 @@ Endpoints:
   Private-Port-Name: SNI_PORT
   Private-Port: 3306
   Public-Port-Name: SNI_PROXY_PORT
-  Protocols: tls
+  Protocols: [tls]
   Mappings:
   - Frontend: ''
     Backend: ''

@@ -107,7 +107,7 @@ Endpoints:
   Public-Port-Name: SNI1_PROXY_PORT
   Protocols: [tls]
   Mappings:
-  - Frontend: 'TLS_PORT_1'
+  - Frontend: 'TLS_PORT_2'
     Backend: ''
 - Private-IP-Name: SNI2_IP
   Private-Port-Name: SNI2_PORT

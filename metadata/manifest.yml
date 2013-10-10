@@ -101,4 +101,19 @@ Endpoints:
   Mappings:
   - Frontend: ''
     Backend: ''
-
+- Private-IP-Name: SNI1_IP
+  Private-Port-Name: SNI1_PORT
+  Private-Port: 3306
+  Public-Port-Name: SNI1_PROXY_PORT
+  Protocols: [tls]
+  Mappings:
+  - Frontend: 'TLS_PORT_1'
+    Backend: ''
+- Private-IP-Name: SNI2_IP
+  Private-Port-Name: SNI2_PORT
+  Private-Port: 3306
+  Public-Port-Name: SNI2_PROXY_PORT
+  Protocols: [tls]
+  Mappings:
+  - Frontend: '2305'
+    Backend: ''

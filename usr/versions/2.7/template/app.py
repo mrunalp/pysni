@@ -10,11 +10,11 @@ import imp
 import os
 
 try:
-   zvirtenv = os.path.join(os.environ['OPENSHIFT_PYSNI_DIR'],
-                           'virtenv', 'bin', 'activate_this.py')
-   execfile(zvirtenv, dict(__file__ = zvirtenv) )
+    zvirtenv = os.path.join(os.environ['OPENSHIFT_PYSNI_DIR'],
+                            'virtenv', 'bin', 'activate_this.py')
+    execfile(zvirtenv, dict(__file__=zvirtenv))
 except IOError:
-   pass
+    pass
 
 #
 # IMPORTANT: Put any additional includes below this line.  If placed above this
@@ -22,38 +22,29 @@ except IOError:
 #
 from gevent.pywsgi import WSGIServer
 
-
 #
 #  main():
 #
 if __name__ == '__main__':
-   ip   = os.environ['OPENSHIFT_PYSNI_IP']
-   port = int(os.environ['OPENSHIFT_PYSNI_PORT'])
-   app = imp.load_source('application', 'wsgi/application')
+    ip = os.environ['OPENSHIFT_PYSNI_IP']
+    port = int(os.environ['OPENSHIFT_PYSNI_PORT'])
+    app = imp.load_source('application', 'wsgi/application')
 
-   sni_ip = os.environ['OPENSHIFT_PYSNI_SNI_IP']
-   sni_port = int(os.environ['OPENSHIFT_PYSNI_SNI_PORT'])
+    sni_ip = os.environ['OPENSHIFT_PYSNI_SNI_IP']
+    sni_port = int(os.environ['OPENSHIFT_PYSNI_SNI_PORT'])
 
-   sni_cert = os.environ['OPENSHIFT_PYSNI_SNI_CERT']
-   sni_key = os.environ['OPENSHIFT_PYSNI_SNI_KEY']
+    sni_cert = os.environ['OPENSHIFT_PYSNI_SNI_CERT']
+    sni_key = os.environ['OPENSHIFT_PYSNI_SNI_KEY']
 
-   servers = []
+    #servers = []
 
-   print('Preparing WSGIServer on %s:%d' % (ip, port))
-   servers.append(WSGIServer((ip, port), app.application))
+    #print('Preparing WSGIServer on %s:%d' % (ip, port))
+    #servers.append(WSGIServer((ip, port), app.application))
 
-   print('Preparing SSL WSGIServer on %s:%d with %s %s' % (sni_ip, sni_port, sni_cert, sni_key))
-   servers.append(WSGIServer((sni_ip, sni_port), app.application, keyfile=sni_key, certfile=sni_cert))
+    print('Preparing SSL WSGIServer on %s:%d with %s %s' %
+          (sni_ip, sni_port, sni_cert, sni_key))
+    server = WSGIServer((sni_ip, sni_port), app.application,
+                        keyfile=sni_key, certfile=sni_cert)
 
-   print('Starting WSGIServers')
-   for server in servers:
-      server.start()
-
-   print('Waiting for WSGIServers')
-   try:
-      servers[0]._stopped_event.wait()
-   except:
-      for server in servers:
-         server.stop()
-      raise
-
+    print('Starting WSGIServers')
+    server.serve_forever()
